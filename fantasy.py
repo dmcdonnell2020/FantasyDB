@@ -1,8 +1,8 @@
 import sqlite3
-from prettytable import PrettyTable
 
 def CreateTables():
     connection = sqlite3.connect("FantasyDB.db")
+    connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     
     cursor.execute("DROP TABLE Roster")
@@ -18,22 +18,28 @@ def CreateTables():
     connection.commit()
     connection.close()
 
-def print_formatted_table(result_set):
-    if not result_set:
-        print("No data to display")
+def print_results(query):
+    conn = sqlite3.connect("FantasyDB.db")
+    cursor = conn.cursor()
+    cursor.execute(query)
+    headers = [description[0] for description in cursor.description]
+    rows = cursor.fetchall()
+
+    if not rows:
+        print("No data found")
         return
 
-    columns = result_set[0].keys() if isinstance(result_set[0], dict) else None
+        
+    for header in headers:
+        print(f"{header.ljust(20)}", end=" | ")
+    print()  
+    print("-" * (20 * len(headers) + len(headers) - 1)) 
 
-    table = PrettyTable(columns) if columns else PrettyTable()
-
-    for row in result_set:
-        if isinstance(row, dict):
-            table.add_row([row[column] for column in columns])
-        else:
-            table.add_row(row)
-
-    print(table)
+    for row in rows:
+        for value in row:
+            print(f"{str(value).ljust(20)}", end=" | ")
+        print()  
+    conn.close()
 
 def sqlcommands(s):
     connection = sqlite3.connect("FantasyDB.db")
@@ -48,83 +54,162 @@ def main():
     connection = sqlite3.connect("FantasyDB.db")
     cursor = connection.cursor()
     CreateTables()
-    #sqlcommands("INSERT INTO QB VALUES('Josh Allen', 'Devin McDonnell', 2, 19.8, 20.6, 21.4, 'Healthy','Eagles');")
-    #sqlcommands("INSERT INTO RB VALUES('Christian Mccaffery', 'Devin McDonnell', 1, 18.8, 18.6, 19.4, 'Healthy', '49ers');")
-    #sqlcommands("INSERT INTO WR VALUES('Tyreek Hill', 'Devin McDonnell', 2, 19, 20.4, 22.4, 'Healthy', 'Dolphins');")
-    #sqlcommands("INSERT INTO TE VALUES('Travis Kelce', 'Devin McDonnell', 1, 17, 15.6, 18.4, 'Healthy', 'Cheifs');")
-    #sqlcommands("INSERT INTO DEF VALUES('Cowboys', 'Devin McDonnell', 5, 10, 9.2, 8.3);")
-    #sqlcommands("INSERT INTO K VALUES('Justin Tucker', 'Devin McDonnell', 2, 8, 4.6, 7.6, 'Healthy', 'Ravens');")
     
     print("Welcome to Fantasy DB!")
-    while(True):
+    ask = "Y"
+    while(ask == "Y"):
         
         print("Select which feature you would like to use: ")
-        choice = input(" (1) Insert a player into the database\n (2) Update a players injury status\n (3) Insert a player into your roster\n (4) Delete a player from your roster\n (5) Display the top performers at a position\n (6) Insert your team statistics\n (7) Update another teams statistics\n (8) Update a Manager's Name\n (9) Display the current standings of your league\n (10) Add a Free Agent to your roster\n (11) Remove a team from the league \n (12) Quit\n")
+        choice = input(" (1) Insert a player into the database\n (2) Update a players injury status\n (3) Display a manager's roster\n (4) Delete a player from your roster\n (5) Display the top performers at a position\n (6) Insert your team statistics\n (7) Update another teams statistics\n (8) Update a Manager's Name\n (9) Display the current standings of your league\n (10) Add a Free Agent to your roster\n (11) Remove a team from the league \n (12) Quit\n")
         if( choice == "1"):
-            position = input("Select position of the player(QB, RB, WR, TE, DEF, K): ")
+            position = ""
+            while(position not in ["QB", "RB", "WR", "TE", "DEF", "K"] ):
+                position = input("Select position of the player(QB, RB, WR, TE, DEF, K): ")    
+                if position not in ["QB", "RB", "WR", "TE", "DEF", "K"]:
+                    print("Enter a valid position")  
             if position == "DEF":
                 #Get vals for def and execute
                 name = input("Enter the team name of the defense: ")
                 manager = input("Enter the manager name(None if player is a free agent): ")
-                rank = input("Enter the position rank of the defense you would like to add: ")
-                score = input("Enter this weeks score for the defense you would like to add: ")
-                ppg = input("Enter the number of points the defense scores per game: ")
-                proj = input("Enter the number of points the defense is projected to score this week: ")
-                sqlcommands("INSERT INTO DEF VALUES(\'" + name + "\', \'" + manager + "\', " + rank + ", " + score + ", " + ppg + ", " + proj + ");")
+                rank = 0
+                score = -1
+                ppg = -1
+                proj = -1
+                while(rank < 1):
+                    rank = int(input("Enter the position rank of the defense you would like to add: "))
+                    if rank < 1:
+                        print("Please enter a value greater than 0")
+                while(score < 0.00):
+                    score = float(input("Enter this weeks score for the defense you would like to add: "))
+                    if score < 0.00:
+                        print("Please enter a value greater than 0.0")
+                while(ppg < 0.00):
+                    ppg = float(input("Enter the number of points the defense scores per game: "))
+                    if ppg < 0.00:
+                        print("Please enter a value greater than 0.0")
+                while(proj < 0.00):
+                    proj = float(input("Enter the number of points the defense is projected to score this week: "))
+                    if proj < 0.00:
+                        print("Please enter a value greater than 0.0")
+                sqlcommands("INSERT INTO DEF VALUES(\'" + name + "\', \'" + manager + "\', " + str(rank) + ", " + str(score) + ", " + str(ppg) + ", " + str(proj)  + ");")
+                print("Updated Defenses:")
+                print_results("SELECT * FROM DEF;")
             else:
                 #Get alternate vals and execute query
-                name = input("Enter the players name:")
+                name = input("Enter the players name: ")
                 manager = input("Enter the manager name(None if player is a free agent): ")
-                rank = input("Enter the position rank of the player you would like to add: ")
-                score = input("Enter this weeks score for the player you would like to add: ")
-                ppg = input("Enter the number of points the player scores per game: ")
-                proj = input("Enter the number of points the player is projected to score this week: ")
+                rank = 0
+                score = -1
+                ppg = -1
+                proj = -1
+                while(rank < 1):
+                    rank = int(input("Enter the position rank of the player you would like to add: "))
+                    if rank < 1:
+                        print("Please enter a value greater than 0")
+                while(score < 0.00):
+                    score = float(input("Enter this weeks score for the player you would like to add: "))
+                    if score < 0.00:
+                        print("Please enter a value greater than 0.0")
+                while(ppg < 0.00):
+                    ppg = float(input("Enter the number of points the player scores per game: "))
+                    if ppg < 0.00:
+                        print("Please enter a value greater than 0.0")
+                while(proj < 0.00):
+                    proj = float(input("Enter the number of points the player is projected to score this week: "))
+                    if proj < 0.00:
+                        print("Please enter a value greater than 0.0")
                 status = input("Enter the player's status(Healthy, Q, O): ")
                 team = input("Enter the team that the player plays for: ")
-                sqlcommands("INSERT INTO " + position + " VALUES(\'" + name + "\', \'" + manager + "\', " + rank + ", " + score + ", " + ppg + ", " + proj + ", \'" + status + "\', \'" + team + "\');")
+                sqlcommands("INSERT INTO " + position + " VALUES(\'" + name + "\', \'" + manager + "\', " + str(rank) + ", " + str(score) + ", " + str(ppg) + ", " + str(proj)  + ", \'" + status + "\', \'" + team + "\');")
+                print("Updated " + position + "s:")
+                print_results("SELECT * FROM " + position + ";")
 
         if(choice == "2"):
-            position = input("Select position of the player(QB, RB, WR, TE, K): ")            
+            position = ""
+            while(position not in ["QB", "RB", "WR", "TE", "K"] ):
+                position = input("Select position of the player(QB, RB, WR, TE, K): ")    
+                if position not in ["QB", "RB", "WR", "TE", "K"]:
+                    print("Enter a valid position")    
             name = input("Enter the players name: ")
             status = input("Enter the player's updated status(Healthy, Q, O): ")
             sqlcommands("UPDATE " + position + " SET Status = \'" + status + "\' WHERE NAME = \'" + name + "\';")
+            print("Updated " + position + "s:")
+            print_results("SELECT * FROM " + position + ";")
         
         if(choice == '3'):
             mname = input("Enter the manager's name: ")
             sqlcommands("INSERT INTO Roster SELECT q.Manager, q.Name, r.Name, w.Name, t.Name, d.Name, k.Name FROM QB q, RB r, WR w, TE t, DEF d, K k WHERE q.Manager = \'" + mname + "\' AND  r.Manager = \'" + mname + "\' AND  w.Manager = \'" + mname + "\' AND  t.Manager = \'" + mname + "\' AND  d.Manager = \'" + mname + "\' AND  k.Manager = \'" + mname + "\';" )
+            print_results("SELECT * FROM Roster;")
 
         if(choice == '4'):
-            position = input("Select position of the player(QB, RB, WR, TE, DEF, K): ")
+            position = ""
+            while(position not in ["QB", "RB", "WR", "TE", "DEF", "K"] ):
+                position = input("Select position of the player(QB, RB, WR, TE, DEF, K): ")    
+                if position not in ["QB", "RB", "WR", "TE", "DEF", "K"]:
+                    print("Enter a valid position")  
             name = input("Enter the name of the player you would like to drop: ")
             sqlcommands("UPDATE Roster SET " + position + " = 'None';")
-            sqlcommands("UPDATE " + position + " SET Manager = 'None' WHERE Name = \'" + name + "'\;")
+            sqlcommands("UPDATE " + position + " SET Manager = 'None' WHERE Name = \'" + name + "\';")
+            print("Updated " + position + "s:")
+            print_results("SELECT * FROM " + position + ";")
         
         if(choice == '5'):
-            position = input("Select position you would like to sort(QB, RB, WR, TE, DEF, K): ")
-            print_formatted_table(sqlcommands("SELECT * FROM " + position + " ORDER BY PositionRank LIMIT 5;"))
+            position = ""
+            while(position not in ["QB", "RB", "WR", "TE", "DEF", "K"] ):
+                position = input("Select position of the player(QB, RB, WR, TE, DEF, K): ")    
+                if position not in ["QB", "RB", "WR", "TE", "DEF", "K"]:
+                    print("Enter a valid position")  
+            print_results("SELECT * FROM " + position + " ORDER BY PositionRank LIMIT 5;")
         
         if(choice == '6'):
             name = input("Enter the manager's name: ")
-            record = input("Enter the team's current record: ")
-            score = input("Enter the team's total points: ")
-            sqlcommands("INSERT INTO TeamStats VALUES(\'" + name + "\', \'" + record + "\', " + score +");")
+            record = ""
+            while("-" not in record):
+                    record = input("Enter the record of this team: ")
+                    if "-" not in record:
+                        print("Please enter a valid record with a dash")
+            score = -1
+            while(score < 0.00):
+                    score = float(input("Enter this team's total points for: "))
+                    if score < 0.00:
+                        print("Please enter a value greater than 0.0")
+            sqlcommands("INSERT INTO TeamStats VALUES(\'" + name + "\', \'" + record + "\', " + str(score) +");")
+            print("Updated Team Stats:")
+            print_results("SELECT * FROM TeamStats;")
         
         if(choice == '7'):
             name = input("Enter the manager's name: ")
-            record = input("Enter the teams updated record: ")
-            score = input("Enter the team's updated total points: ")
-            sqlcommands("UPDATE TeamStats SET Record = \'" + record + "\', Score = " + score + " WHERE Manager = \'" + name + "\';")
+            record = ""
+            while("-" not in record):
+                    record = input("Enter this teams updated record: ")
+                    if "-" not in record:
+                        print("Please enter a valid record with a dash")
+            score = -1
+            while(score < 0.00):
+                    score = float(input("Enter the updated total score for this team: "))
+                    if score < 0.00:
+                        print("Please enter a value greater than 0.0")
+            
+            sqlcommands("UPDATE TeamStats SET Record = \'" + record + "\', Score = " + str(score) + " WHERE Manager = \'" + name + "\';")
+            print("Updated Team Stats:")
+            print_results("SELECT * FROM TeamStats;")
         
         if(choice == '8'):
             curr = input("Enter the old manager's name: ")
             new = input("Enter the manager's updated name: ")
             sqlcommands("UPDATE TeamStats SET Manager = \'" + new + "\' WHERE Manager = \'" + curr + "\';")
+            print("Updated Team Stats:")
+            print_results("SELECT * FROM TeamStats;")
 
         if(choice == '9'):
-            print(sqlcommands("SELECT * FROM TeamStats ORDER BY Record DESC, Score DESC;"))
+            print_results("SELECT * FROM TeamStats ORDER BY Record DESC, Score DESC;")
 
         if(choice == '10'):
-            position = input("Enter the position of the player you would like to pick up: ")
+            position = ""
+            while(position not in ["QB", "RB", "WR", "TE", "DEF", "K"] ):
+                position = input("Select position of the player(QB, RB, WR, TE, DEF, K): ")    
+                if position not in ["QB", "RB", "WR", "TE", "DEF", "K"]:
+                    print("Enter a valid position")  
             nName = input("Enter the name of the player you would like to pick up: ")
             Manager = input("Enter the manager's name: ")
             oName = input("Enter the name of the player you would like to drop: ")
@@ -141,11 +226,18 @@ def main():
                 cursor.execute("COMMIT;")
             
         if(choice == '11'):
-            manager = "Enter the manager's name whose team you would like to delete: "
+            manager = input("Enter the manager's name whose team you would like to delete: ")
             sqlcommands("DELETE FROM TeamStats WHERE Manager = \'" + manager + "\';")
+            print("Updated Team Stats:")
+            print_results("SELECT * FROM TeamStats;")
 
         if(choice == '12'):
             break
+
+        ask = input("Would you like to perform another action?(Y/N): ")
+        while(ask not in ["Y", "N"]):
+            ask = input("Would you like to perform another action?(Y/N): ")
+    print("Thank you for using FantasyDB!")
 
 
 if __name__ == "__main__":
