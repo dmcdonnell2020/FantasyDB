@@ -14,7 +14,7 @@ def CreateTables():
     cursor.execute("CREATE TABLE IF NOT EXISTS TE(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
     cursor.execute("CREATE TABLE IF NOT EXISTS DEF(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
     cursor.execute("CREATE TABLE IF NOT EXISTS K(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
-
+    
     connection.commit()
     connection.close()
 
@@ -28,8 +28,7 @@ def print_results(query):
     if not rows:
         print("No data found")
         return
-
-        
+  
     for header in headers:
         print(f"{header.ljust(20)}", end=" | ")
     print()  
@@ -60,7 +59,7 @@ def main():
     while(ask == "Y"):
         
         print("Select which feature you would like to use: ")
-        choice = input(" (1) Insert a player into the database\n (2) Update a players injury status\n (3) Display a manager's roster\n (4) Delete a player from your roster\n (5) Display the top performers at a position\n (6) Insert your team statistics\n (7) Update another teams statistics\n (8) Update a Manager's Name\n (9) Display the current standings of your league\n (10) Add a Free Agent to your roster\n (11) Remove a team from the league \n (12) Quit\n")
+        choice = input(" (1) Insert a player into the database\n (2) Update a players injury status\n (3) Display a manager's roster\n (4) Delete a player from your roster\n (5) Display the top performers at a position\n (6) Insert your team statistics\n (7) Update another teams statistics\n (8) Update a Manager's Name\n (9) Display the current standings of your league\n (10) Add a Free Agent to your roster\n (11) Remove a team from the league \n (12) Quit\n SELECTION: ")
         if( choice == "1"):
             position = ""
             while(position not in ["QB", "RB", "WR", "TE", "DEF", "K"] ):
@@ -238,7 +237,6 @@ def main():
         while(ask not in ["Y", "N"]):
             ask = input("Would you like to perform another action?(Y/N): ")
     print("Thank you for using FantasyDB!")
-
 
 if __name__ == "__main__":
     main()
