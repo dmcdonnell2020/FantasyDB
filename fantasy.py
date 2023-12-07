@@ -1,25 +1,48 @@
-import sqlite3
+import mysql.connector
 
 def CreateTables():
-    connection = sqlite3.connect("FantasyDB.db")
-    connection.row_factory = sqlite3.Row
+    connection = mysql.connector.connect(
+    user='root', 
+    password='fantasy',
+    host='localhost',
+    database = 'FantasyDB'
+)
+    
     cursor = connection.cursor()
     
-    cursor.execute("DROP TABLE Roster")
-    cursor.execute("CREATE TABLE IF NOT EXISTS TeamStats(Manager VARCHAR(30), Record VARCHAR(10), Score DECIMAL(5,2),PRIMARY KEY(Manager))")
+   
+    cursor.execute("DROP TABLE Roster;")
+    cursor.execute("DROP TABLE QB;")
+    cursor.execute("DROP TABLE RB;")
+    cursor.execute("DROP TABLE WR;")
+    cursor.execute("DROP TABLE TE;")
+    cursor.execute("DROP TABLE DEF;")
+    cursor.execute("DROP TABLE K;")
+
+    cursor.execute("CREATE TABLE IF NOT EXISTS TeamStats(Manager VARCHAR(30), Record VARCHAR(10), Score DECIMAL(6,2),PRIMARY KEY(Manager))")
     cursor.execute("CREATE TABLE IF NOT EXISTS Roster(Manager VARCHAR(30), QB VARCHAR(40), RB VARCHAR(40), WR VARCHAR(40), TE VARCHAR(40), DEF VARCHAR(20), K VARCHAR(40), PRIMARY KEY (Manager), FOREIGN KEY (Manager) REFERENCES TeamStats(Manager))")
-    cursor.execute("CREATE TABLE IF NOT EXISTS QB(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
-    cursor.execute("CREATE TABLE IF NOT EXISTS RB(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
-    cursor.execute("CREATE TABLE IF NOT EXISTS WR(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
-    cursor.execute("CREATE TABLE IF NOT EXISTS TE(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
-    cursor.execute("CREATE TABLE IF NOT EXISTS DEF(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
-    cursor.execute("CREATE TABLE IF NOT EXISTS K(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name), FOREIGN KEY (Manager) REFERENCES Roster(Manager))")
+    cursor.execute("CREATE TABLE IF NOT EXISTS QB(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name))")
+    cursor.execute("CREATE TABLE IF NOT EXISTS RB(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS WR(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS TE(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS DEF(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), PRIMARY KEY(Name)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS K(Name VARCHAR(40), Manager VARCHAR(30), PositionRank INT, Score DECIMAL(3, 1), PPG DECIMAL(3, 1), ProjPoints DECIMAL(3, 1), Status VARCHAR(20),TeamName VARCHAR(30), PRIMARY KEY(Name)")
+    cursor.execute("INSERT IGNORE INTO TeamStats VALUES('Devin', '5-6', 1678.3);")
+    cursor.execute("INSERT IGNORE INTO TeamStats VALUES('Cole', '6-5', 1768.3);")
+    cursor.execute("INSERT IGNORE INTO TeamStats VALUES('Joe', '3-8', 1558.5);")
+    cursor.execute("INSERT IGNORE INTO TeamStats VALUES('John', '8-3', 1868.7);")
     
+
     connection.commit()
     connection.close()
 
 def print_results(query):
-    conn = sqlite3.connect("FantasyDB.db")
+    conn = mysql.connector.connect(
+    user='root', 
+    password='fantasy',
+    host='localhost',
+    database = 'FantasyDB'
+)
     cursor = conn.cursor()
     cursor.execute(query)
     headers = [description[0] for description in cursor.description]
@@ -41,7 +64,12 @@ def print_results(query):
     conn.close()
 
 def sqlcommands(s):
-    connection = sqlite3.connect("FantasyDB.db")
+    connection = mysql.connector.connect(
+    user='root', 
+    password='fantasy',
+    host='localhost',
+    database = 'FantasyDB'
+)
     cursor = connection.cursor()
     cursor.execute(s)
     result = cursor.fetchall()
@@ -50,7 +78,12 @@ def sqlcommands(s):
     return result
 
 def main():
-    connection = sqlite3.connect("FantasyDB.db")
+    connection = mysql.connector.connect(
+    user='root',  
+    password='fantasy',
+    host='localhost',
+    database = 'FantasyDB'
+)
     cursor = connection.cursor()
     CreateTables()
     
